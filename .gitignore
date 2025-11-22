@@ -9,6 +9,7 @@ Thumbs.db
 Desktop.ini
 
 # Editor and IDE Files
+.claude
 .vscode/
 .idea/
 *.sublime-project
