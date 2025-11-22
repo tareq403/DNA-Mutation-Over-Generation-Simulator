@@ -1,12 +1,16 @@
 // Main application logic
 
 let essentialGenes = [];
+let currentGenePool = null;
+let simulationRunning = false;
+let stopRequested = false;
 
 // Handle form submission
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('configForm');
     const generateGenesBtn = document.getElementById('generateGenes');
     const runSimulationBtn = document.getElementById('runSimulation');
+    const stopSimulationBtn = document.getElementById('stopSimulation');
 
     generateGenesBtn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -16,6 +20,11 @@ document.addEventListener('DOMContentLoaded', function() {
     runSimulationBtn.addEventListener('click', function(e) {
         e.preventDefault();
         runSimulation();
+    });
+
+    stopSimulationBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        stopSimulation();
     });
 });
 
@@ -78,11 +87,6 @@ function generateGenes() {
 }
 
 function runSimulation() {
-    // Show loading message
-    const resultsContainer = document.getElementById('resultsContainer');
-    resultsContainer.innerHTML = '<div class="loading">Running simulation... Please wait.</div>';
-    resultsContainer.style.display = 'block';
-
     // Get simulation parameters
     const startPopulation = parseInt(document.getElementById('startPopulation').value);
     const maxAllowedPopulation = parseInt(document.getElementById('maxAllowedPopulation').value);
@@ -133,49 +137,139 @@ function runSimulation() {
         return;
     }
 
-    // Run simulation asynchronously to avoid blocking UI
-    setTimeout(() => {
-        try {
-            // Create gene pool with user-specified parameters
-            const childCount = 2;
+    try {
+        // Create gene pool with user-specified parameters
+        const childCount = 2;
 
-            const genePool = new GenePool(
-                startPopulation,
-                maxAllowedPopulation,
-                essentialGenes,
-                unusedRatio,
-                generationCount,
-                childCount,
-                insertChance,
-                deleteChance,
-                changeChance
-            );
+        currentGenePool = new GenePool(
+            startPopulation,
+            maxAllowedPopulation,
+            essentialGenes,
+            unusedRatio,
+            generationCount,
+            childCount,
+            insertChance,
+            deleteChance,
+            changeChance
+        );
 
-            // Run simulation
-            console.log('Starting simulation...');
-            const startTime = performance.now();
-            const generationStats = genePool.simulateGenerations();
-            const endTime = performance.now();
-            console.log(`Simulation completed in ${((endTime - startTime) / 1000).toFixed(2)} seconds`);
+        // Reset state
+        simulationRunning = true;
+        stopRequested = false;
 
-            // Clear loading message
-            resultsContainer.innerHTML = '';
+        // Update UI
+        document.getElementById('runSimulation').disabled = true;
+        document.getElementById('stopSimulation').style.display = 'inline-block';
+        document.getElementById('progressContainer').style.display = 'block';
+        document.getElementById('resultsContainer').style.display = 'block';
+        document.getElementById('resultsContainer').innerHTML = '';
 
-            // Display results
-            const tableContainer = document.createElement('div');
-            tableContainer.id = 'tableContainer';
-            resultsContainer.appendChild(tableContainer);
+        // Reset charts from previous run
+        resetCharts();
 
-            const chartsContainer = document.createElement('div');
-            chartsContainer.id = 'chartsContainer';
-            resultsContainer.appendChild(chartsContainer);
+        // Prepare results containers
+        const tableContainer = document.createElement('div');
+        tableContainer.id = 'tableContainer';
+        document.getElementById('resultsContainer').appendChild(tableContainer);
 
-            displayTable(generationStats);
-            displayCharts(generationStats);
+        const chartsContainer = document.createElement('div');
+        chartsContainer.id = 'chartsContainer';
+        document.getElementById('resultsContainer').appendChild(chartsContainer);
 
-        } catch (error) {
-            resultsContainer.innerHTML = `<div class="error">Error running simulation: ${error.message}</div>`;
-            console.error(error);
-        }
-    }, 100);
+        // Start progressive simulation
+        console.log('Starting progressive simulation...');
+        runProgressiveSimulation();
+
+    } catch (error) {
+        alert(`Error starting simulation: ${error.message}`);
+        console.error(error);
+        resetSimulationUI();
+    }
+}
+
+function runProgressiveSimulation() {
+    if (stopRequested || currentGenePool.isComplete()) {
+        // Simulation complete
+        finishSimulation();
+        return;
+    }
+
+    // Simulate next generation
+    const generation = currentGenePool.simulateNextGeneration();
+
+    if (generation === null) {
+        // Population extinct or complete
+        finishSimulation();
+        return;
+    }
+
+    // Update progress
+    updateProgress();
+
+    // Update visualization
+    updateVisualization();
+
+    // Schedule next generation (using setTimeout to prevent UI freeze)
+    setTimeout(runProgressiveSimulation, 0);
+}
+
+function updateProgress() {
+    const progress = currentGenePool.getProgress();
+    const currentGen = currentGenePool.currentGeneration;
+    const totalGen = currentGenePool.generationCount;
+    const currentStats = currentGenePool.generations[currentGenePool.generations.length - 1].getStats();
+
+    // Update progress bar
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = `${(progress * 100).toFixed(1)}%`;
+
+    // Update progress text
+    const progressText = document.getElementById('progressText');
+    progressText.textContent = `Generation ${currentGen} / ${totalGen}`;
+
+    // Update progress stats
+    const progressStats = document.getElementById('progressStats');
+    progressStats.innerHTML = `
+        <div><strong>Population:</strong> ${formatWithCommas(currentStats.populationSize)}</div>
+        <div><strong>Avg Fitness:</strong> ${formatNumber(currentStats.avgFitness)}</div>
+        <div><strong>Median Fitness:</strong> ${formatNumber(currentStats.medianFitness)}</div>
+        <div><strong>Avg Length:</strong> ${formatNumber(currentStats.avgLength)}</div>
+        <div><strong>Avg Unused Ratio:</strong> ${formatNumber(currentStats.avgUnusedRatio, 4)}</div>
+    `;
+}
+
+function finishSimulation() {
+    console.log('Simulation complete!');
+    simulationRunning = false;
+
+    // Final update
+    updateProgress();
+    updateVisualization();
+
+    // Reset UI
+    resetSimulationUI();
+
+    // Show completion message
+    const progressText = document.getElementById('progressText');
+    progressText.textContent += ' - Complete!';
+}
+
+function stopSimulation() {
+    stopRequested = true;
+    console.log('Stop requested...');
+}
+
+function resetSimulationUI() {
+    document.getElementById('runSimulation').disabled = false;
+    document.getElementById('stopSimulation').style.display = 'none';
+}
+
+function updateVisualization() {
+    const allStats = currentGenePool.getAllStats();
+
+    // Update table
+    displayTable(allStats);
+
+    // Update charts
+    displayCharts(allStats);
 }

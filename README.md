@@ -28,6 +28,7 @@ unusd_dna/
 ├── js/
 │   ├── config.js       # Global configuration
 │   ├── DNA.js          # DNA class with mutation logic
+│   ├── Generation.js   # Generation snapshot class
 │   ├── GenePool.js     # Population simulation logic
 │   ├── utils.js        # Utility functions
 │   ├── visualization.js # Charts and tables
@@ -45,14 +46,23 @@ unusd_dna/
 - Fitness scoring (count of essential gene occurrences)
 - Unused ratio calculation
 
+### Generation Class
+- Stores population snapshots for each generation
+- Calculates and caches generation statistics
+- Enables efficient progressive rendering
+
 ### GenePool Class
 - Population-based evolutionary simulation
-- Generation-by-generation tracking
+- Progressive generation-by-generation simulation
 - Fitness-based selection
 - Comprehensive statistics collection
+- Non-blocking execution for long simulations
 
 ### Visualization
 - Interactive input form with helpful descriptions
+- Real-time progress bar and statistics
+- Stop simulation capability
+- Progressive updates of tables and charts
 - Generation statistics table
 - Multiple trend charts:
   - Population size over time
@@ -126,9 +136,12 @@ To test the hypothesis, run multiple simulations with different configurations:
 
 ## Performance Notes
 
-- Simulations with high population counts or many generations may take time
-- Progress is logged to browser console
-- The UI remains responsive during simulation
+- **Progressive Simulation**: The simulation runs one generation at a time using `setTimeout`, preventing browser freezing even with 500+ generations
+- **Real-time Updates**: Tables and charts update live as the simulation progresses
+- **Stop Capability**: Users can stop long-running simulations at any time
+- **Optimized Rendering**: Chart animations are disabled for better performance during progressive updates
+- **Non-blocking**: The UI remains fully responsive throughout the entire simulation
+- Progress is logged to browser console for debugging
 
 ## Future Enhancements
 

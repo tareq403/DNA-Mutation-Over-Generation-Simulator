@@ -1,5 +1,8 @@
 // Visualization functions for displaying simulation results
 
+// Store chart instances for progressive updates
+let chartInstances = {};
+
 // Display generation statistics in a table
 function displayTable(generationStats) {
     const tableContainer = document.getElementById('tableContainer');
@@ -64,7 +67,6 @@ function displayTable(generationStats) {
 // Create charts for visualization
 function displayCharts(generationStats) {
     const chartsContainer = document.getElementById('chartsContainer');
-    chartsContainer.innerHTML = '<h2>Generation Trends</h2>';
 
     // Extract data arrays
     const generations = generationStats.map(s => s.generation);
@@ -75,7 +77,7 @@ function displayCharts(generationStats) {
     const avgLength = generationStats.map(s => s.avgLength);
     const avgUnusedRatio = generationStats.map(s => s.avgUnusedRatio);
 
-    // Create canvas elements for each chart
+    // Chart configurations
     const chartConfigs = [
         {
             id: 'populationChart',
@@ -115,59 +117,91 @@ function displayCharts(generationStats) {
         }
     ];
 
-    chartConfigs.forEach(config => {
-        const chartWrapper = document.createElement('div');
-        chartWrapper.className = 'chart-wrapper';
+    // Check if we need to initialize charts
+    const needsInit = Object.keys(chartInstances).length === 0;
 
-        const canvas = document.createElement('canvas');
-        canvas.id = config.id;
-        chartWrapper.appendChild(canvas);
-        chartsContainer.appendChild(chartWrapper);
+    if (needsInit) {
+        // First time: create chart structure
+        chartsContainer.innerHTML = '<h2>Generation Trends</h2>';
 
-        const ctx = canvas.getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: generations,
-                datasets: [{
-                    label: config.title,
-                    data: config.data,
-                    borderColor: config.color,
-                    backgroundColor: config.color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    title: {
-                        display: true,
-                        text: config.title
-                    }
+        chartConfigs.forEach(config => {
+            const chartWrapper = document.createElement('div');
+            chartWrapper.className = 'chart-wrapper';
+
+            const canvas = document.createElement('canvas');
+            canvas.id = config.id;
+            chartWrapper.appendChild(canvas);
+            chartsContainer.appendChild(chartWrapper);
+
+            const ctx = canvas.getContext('2d');
+            chartInstances[config.id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: generations,
+                    datasets: [{
+                        label: config.title,
+                        data: config.data,
+                        borderColor: config.color,
+                        backgroundColor: config.color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1
+                    }]
                 },
-                scales: {
-                    x: {
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 0 // Disable animation for better performance
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
                         title: {
                             display: true,
-                            text: 'Generation'
+                            text: config.title
                         }
                     },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Value'
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Generation'
+                            }
                         },
-                        beginAtZero: true
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            },
+                            beginAtZero: true
+                        }
                     }
                 }
+            });
+        });
+    } else {
+        // Update existing charts
+        chartConfigs.forEach(config => {
+            const chart = chartInstances[config.id];
+            if (chart) {
+                chart.data.labels = generations;
+                chart.data.datasets[0].data = config.data;
+                chart.update('none'); // Update without animation
             }
         });
+    }
+}
+
+// Reset charts (call this when starting a new simulation)
+function resetCharts() {
+    // Destroy existing chart instances
+    Object.values(chartInstances).forEach(chart => {
+        if (chart) {
+            chart.destroy();
+        }
     });
+    chartInstances = {};
 }

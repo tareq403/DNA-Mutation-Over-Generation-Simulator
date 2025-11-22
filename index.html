@@ -108,6 +108,16 @@
                 <h2>Run Simulation</h2>
                 <p>Click the button below to start the evolutionary simulation with the generated genes.</p>
                 <button type="button" id="runSimulation" class="btn btn-success" disabled>Run Simulation</button>
+                <button type="button" id="stopSimulation" class="btn btn-danger" style="display: none;">Stop Simulation</button>
+            </section>
+
+            <section id="progressContainer" class="progress-section" style="display: none;">
+                <h2>Simulation Progress</h2>
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="progressText" class="progress-text">Generation 0 / 0</div>
+                <div id="progressStats" class="progress-stats"></div>
             </section>
 
             <section id="resultsContainer" class="results-section" style="display: none;">
@@ -123,6 +133,7 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/DNA.js"></script>
+    <script src="js/Generation.js"></script>
     <script src="js/GenePool.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/visualization.js"></script>
