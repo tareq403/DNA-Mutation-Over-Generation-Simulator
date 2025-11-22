@@ -98,6 +98,23 @@
                         <input type="number" id="unusedRatio" value="0.7" min="0" max="0.99" step="0.01" required>
                     </div>
 
+                    <div class="form-group">
+                        <label>
+                            Reproduction Mode:
+                            <span class="help-text">Select whether organisms reproduce asexually (cloning) or sexually (with DNA recombination)</span>
+                        </label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="reproductionMode" value="asexual" checked>
+                                <span>Asexual (1 DNA per organism, no recombination)</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="reproductionMode" value="sexual">
+                                <span>Sexual (2 DNAs per organism, with recombination)</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <button type="button" id="generateGenes" class="btn btn-primary">Generate Essential Genes</button>
                 </form>
 
@@ -133,6 +150,7 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/DNA.js"></script>
+    <script src="js/Organism.js"></script>
     <script src="js/Generation.js"></script>
     <script src="js/GenePool.js"></script>
     <script src="js/utils.js"></script>

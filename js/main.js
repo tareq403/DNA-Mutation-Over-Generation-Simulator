@@ -96,6 +96,10 @@ function runSimulation() {
     const changeChance = parseFloat(document.getElementById('changeChance').value);
     const unusedRatio = parseFloat(document.getElementById('unusedRatio').value);
 
+    // Get reproduction mode
+    const reproductionMode = document.querySelector('input[name="reproductionMode"]:checked').value;
+    const asexual = reproductionMode === 'asexual';
+
     // Validate parameters
     if (isNaN(startPopulation) || startPopulation < 1) {
         alert('Initial population must be a positive number');
@@ -139,18 +143,16 @@ function runSimulation() {
 
     try {
         // Create gene pool with user-specified parameters
-        const childCount = 2;
-
         currentGenePool = new GenePool(
             startPopulation,
             maxAllowedPopulation,
             essentialGenes,
             unusedRatio,
             generationCount,
-            childCount,
             insertChance,
             deleteChance,
-            changeChance
+            changeChance,
+            asexual
         );
 
         // Reset state

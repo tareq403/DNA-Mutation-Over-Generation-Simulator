@@ -1,29 +1,61 @@
 // GenePool class for running evolutionary simulation
 class GenePool {
     constructor(startPopulation, maxAllowedPopulation, essentialGenes, unusedRatio,
-                generationCount, childCount, insertChance, deleteChance, changeChance) {
+                generationCount, insertChance, deleteChance, changeChance, asexual) {
         this.startPopulation = startPopulation;
         this.maxAllowedPopulation = maxAllowedPopulation;
         this.essentialGenes = essentialGenes;
         this.unusedRatio = unusedRatio;
         this.generationCount = generationCount;
-        this.childCount = childCount;
         this.insertChance = insertChance;
         this.deleteChance = deleteChance;
         this.changeChance = changeChance;
+        this.asexual = asexual;
 
         this.currentGeneration = 0;
         this.population = [];
         this.generations = [];
         this.isExtinct = false;
 
-        // Initialize starting population
+        // Initialize starting population with organisms
         for (let i = 0; i < startPopulation; i++) {
-            this.population.push(new DNA(essentialGenes, unusedRatio));
+            this.population.push(new Organism(essentialGenes, unusedRatio, asexual));
         }
 
         // Store initial generation
         this.generations.push(new Generation(0, this.population, this.essentialGenes));
+    }
+
+    // Reproduce to create a child organism
+    reproduce() {
+        if (this.asexual) {
+            // Asexual reproduction: take 1 random organism
+            const parent = this.population[Math.floor(Math.random() * this.population.length)];
+
+            // Get gamete (direct copy for asexual)
+            const gamete = parent.getGamete();
+
+            // Apply mutations
+            const mutatedGamete = gamete.mutate(this.insertChance, this.deleteChance, this.changeChance);
+
+            // Create child organism
+            return Organism.fromDNA(mutatedGamete, null, this.essentialGenes, true);
+        } else {
+            // Sexual reproduction: take 2 random organisms
+            const parent1 = this.population[Math.floor(Math.random() * this.population.length)];
+            const parent2 = this.population[Math.floor(Math.random() * this.population.length)];
+
+            // Get gametes from both parents (with recombination)
+            const gamete1 = parent1.getGamete();
+            const gamete2 = parent2.getGamete();
+
+            // Apply mutations to both gametes
+            const mutatedGamete1 = gamete1.mutate(this.insertChance, this.deleteChance, this.changeChance);
+            const mutatedGamete2 = gamete2.mutate(this.insertChance, this.deleteChance, this.changeChance);
+
+            // Create child organism with both mutated gametes
+            return Organism.fromDNA(mutatedGamete1, mutatedGamete2, this.essentialGenes, false);
+        }
     }
 
     // Simulate one generation and return the generation snapshot
@@ -35,20 +67,19 @@ class GenePool {
 
         this.currentGeneration++;
 
-        // Create children from current population
+        // Create children through reproduction
         const children = [];
-        for (const parent of this.population) {
-            const mutatedChildren = parent.makeMutatedCopies(
-                this.childCount,
-                this.insertChance,
-                this.deleteChance,
-                this.changeChance
-            );
-            children.push(...mutatedChildren);
+        const currentPopulationSize = this.population.length;
+        const targetChildrenCount = currentPopulationSize * 2;
+
+        // Reproduce until we have at least n*2 children
+        while (children.length < targetChildrenCount) {
+            const child = this.reproduce();
+            children.push(child);
         }
 
         // Filter out children that cannot survive
-        const survivors = children.filter(child => child.canSurvive(this.essentialGenes));
+        const survivors = children.filter(child => child.canSurvive());
 
         // Check if population extinct
         if (survivors.length === 0) {
@@ -59,7 +90,7 @@ class GenePool {
 
         // Sort by fitness score (descending)
         survivors.sort((a, b) => {
-            return b.fitnessScore(this.essentialGenes) - a.fitnessScore(this.essentialGenes);
+            return b.getFitness() - a.getFitness();
         });
 
         // Keep only top performers if exceeding max population

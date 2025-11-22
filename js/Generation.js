@@ -10,20 +10,18 @@ class Generation {
     }
 
     calculateStats() {
-        const fitnessScores = this.population.map(dna =>
-            dna.fitnessScore(this.essentialGenes)
-        );
-        const lengths = this.population.map(dna => dna.getLength());
-        const unusedRatios = this.population.map(dna =>
-            dna.getUnusedRatio(this.essentialGenes)
-        );
+        const fitnessScores = this.population.map(organism => organism.getFitness());
+        const lengths = this.population.map(organism => organism.getAverageLength());
+        const totalLengths = this.population.map(organism => organism.getTotalLength());
+        const unusedRatios = this.population.map(organism => organism.getAverageUnusedRatio());
 
         this.populationSize = this.population.length;
         this.totalFitness = fitnessScores.reduce((sum, score) => sum + score, 0);
-        this.totalLength = lengths.reduce((sum, len) => sum + len, 0);
+        this.totalLength = totalLengths.reduce((sum, len) => sum + len, 0);
 
         this.avgFitness = this.populationSize > 0 ? this.totalFitness / this.populationSize : 0;
-        this.avgLength = this.populationSize > 0 ? this.totalLength / this.populationSize : 0;
+        this.avgLength = this.populationSize > 0 ?
+            lengths.reduce((sum, len) => sum + len, 0) / this.populationSize : 0;
         this.avgUnusedRatio = this.populationSize > 0 ?
             unusedRatios.reduce((sum, ratio) => sum + ratio, 0) / this.populationSize : 0;
 
