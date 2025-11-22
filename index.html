@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Evolution Simulation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DNA Evolution Simulation</h1>
+            <p class="subtitle">Demonstrating the evolutionary advantage of unused DNA segments</p>
+        </header>
+
+        <main>
+            <section class="config-section">
+                <h2>Configuration</h2>
+                <form id="configForm">
+                    <div class="form-group">
+                        <label for="dnaCharacters">
+                            DNA Characters:
+                            <span class="help-text">Comma-separated list of characters that can appear in DNA (e.g., A,T,C,G)</span>
+                        </label>
+                        <input type="text" id="dnaCharacters" value="A,T,C,G" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="geneLength">
+                            Length of Each Gene:
+                            <span class="help-text">Number of DNA characters in each essential gene sequence</span>
+                        </label>
+                        <input type="number" id="geneLength" value="10" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numEssentialGenes">
+                            Number of Essential Genes:
+                            <span class="help-text">How many unique essential genes should be present in the DNA</span>
+                        </label>
+                        <input type="number" id="numEssentialGenes" value="5" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startPopulation">
+                            Initial Population:
+                            <span class="help-text">Number of DNA organisms to start the simulation with</span>
+                        </label>
+                        <input type="number" id="startPopulation" value="100" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxAllowedPopulation">
+                            Maximum Allowed Population:
+                            <span class="help-text">Maximum number of organisms allowed per generation (natural selection keeps the fittest)</span>
+                        </label>
+                        <input type="number" id="maxAllowedPopulation" value="1000" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="generationCount">
+                            Number of Generations:
+                            <span class="help-text">How many generations to simulate</span>
+                        </label>
+                        <input type="number" id="generationCount" value="50" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="insertChance">
+                            Insert Chance (0.0 - 0.99):
+                            <span class="help-text">Probability of inserting a random DNA character at each position during mutation</span>
+                        </label>
+                        <input type="number" id="insertChance" value="0.001" min="0" max="0.99" step="0.001" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deleteChance">
+                            Delete Chance (0.0 - 0.99):
+                            <span class="help-text">Probability of deleting a DNA character at each position during mutation</span>
+                        </label>
+                        <input type="number" id="deleteChance" value="0.001" min="0" max="0.99" step="0.001" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="changeChance">
+                            Change Chance (0.0 - 0.99):
+                            <span class="help-text">Probability of changing a DNA character to a different random character during mutation</span>
+                        </label>
+                        <input type="number" id="changeChance" value="0.005" min="0" max="0.99" step="0.001" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="unusedRatio">
+                            Unused Ratio (0.0 - 0.99):
+                            <span class="help-text">Ratio of DNA that doesn't code for proteins (0.0 = no unused DNA, 0.9 = 90% unused)</span>
+                        </label>
+                        <input type="number" id="unusedRatio" value="0.7" min="0" max="0.99" step="0.01" required>
+                    </div>
+
+                    <button type="button" id="generateGenes" class="btn btn-primary">Generate Essential Genes</button>
+                </form>
+
+                <div id="essentialGenesDisplay" class="genes-display"></div>
+            </section>
+
+            <section id="simulationSection" class="simulation-section" style="display: none;">
+                <h2>Run Simulation</h2>
+                <p>Click the button below to start the evolutionary simulation with the generated genes.</p>
+                <button type="button" id="runSimulation" class="btn btn-success" disabled>Run Simulation</button>
+            </section>
+
+            <section id="resultsContainer" class="results-section" style="display: none;">
+                <!-- Results will be inserted here -->
+            </section>
+        </main>
+
+        <footer>
+            <p>DNA Evolution Simulation - Demonstrating natural selection of unused DNA segments</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/DNA.js"></script>
+    <script src="js/GenePool.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/visualization.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

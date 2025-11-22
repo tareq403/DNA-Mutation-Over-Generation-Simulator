@@ -63,3 +63,5 @@ coverage/
 *.bak
 *.old
 *.orig
+
+unused_dna.md
